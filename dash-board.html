@@ -1,0 +1,792 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Think Dashboard</title>
+
+    <link href="https://googleapis.com" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #fcfcfc;
+            --card-border: #f0f0f0;
+            --text-main: #1a1d23;
+            --text-muted: #a0a0a0;
+            --primary-green: #00b67a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            padding: 20px;
+            color: var(--text-main);
+            direction: rtl;
+            text-align: right;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #f8f8f8;
+            border-bottom: 1px solid #ddd;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: calc(100% - 40px);
+            margin: 20px;
+            padding: 12px 25px;
+            padding-bottom: -50px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            z-index: 1;
+        }
+
+        .dot {
+            color: #0bee4f;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            /* ط§ظ„ظ…ط³ط§ظپط© ط¨ظٹظ† ط§ظ„ط±ظˆط§ط¨ط· */
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            direction: rtl;
+            /* ظ„طھط±طھظٹط¨ ط§ظ„ظ†طµظˆطµ ط§ظ„ط¹ط±ط¨ظٹط© ط¨ط´ظƒظ„ طµط­ظٹط­ */
+        }
+
+        /* طھظ†ط³ظٹظ‚ ط§ظ„ط¹ظ†ط§طµط± (ط§ظ„ط±ط¦ظٹط³ظٹط© ظˆظ„ظˆط­ط© ط§ظ„طھط­ظƒظ…) */
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            border-radius: 25px;
+        }
+
+        .nav-link {
+            color: #555;
+        }
+
+        .nav-item:hover {
+            background-color: #dddada67;
+        }
+
+        .nav-logo {
+            color: #555;
+        }
+
+        /* ط§ظ„طھظ†ط³ظٹظ‚ ط§ظ„ط£ط³ظˆط¯ ط§ظ„ط¨ظٹط¶ط§ظˆظٹ (Active) ظƒظ…ط§ ظپظٹ طµظˆط±طھظƒ */
+        .nav-item.active {
+            background-color: black;
+            color: white;
+            border-radius: 50px;
+        }
+
+
+        .nav-item.active a {
+            color: white;
+        }
+
+        .nav-item a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+
+        .logout-style {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: #ff4d4d;
+            /* ظ„ظˆظ† ط£ط­ظ…ط± ظ‡ط§ط¯ظٹ ظ„ظ„ظ€ Logout */
+            color: white;
+            border-radius: 50%;
+            /* ط´ظƒظ„ ط¯ط§ط¦ط±ظٹ */
+            transition: 0.3s;
+            text-decoration: none;
+        }
+
+        .logout-style:hover {
+            background-color: #cc0000;
+            transform: scale(1.1);
+        }
+
+        .logout-style svg {
+            stroke: white;
+        }
+
+
+        .nav-placeholder {
+            height: 90px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* --- ط§ظ„ط¹ظ†ط§ظˆظٹظ† ط§ظ„ظƒط¨ظٹط±ط© --- */
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 38px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 18px;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        /* ط§ظ„ط£ظٹظ‚ظˆظ†ط§طھ ط§ظ„ظ…طھط¯ط±ط¬ط© ظˆط§ظ„ط¨ظٹط¶ط§ط، */
+        .icon-sm {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .icon-sm svg {
+            stroke: white !important;
+        }
+
+        /* ط§ظ„ط£ظٹظ‚ظˆظ†ط© ط¨ظٹط¶ط§ط، ط¯ط§ط¦ظ…ظ‹ط§ */
+
+        .bg-blue {
+            background: linear-gradient(135deg, #5c7cfa 0%, #3b5bdb 100%);
+        }
+
+        .bg-green {
+            background: linear-gradient(135deg, #51cf66 0%, #2b8a3e 100%);
+        }
+
+        .bg-yellow {
+            background: linear-gradient(135deg, #ffc034 0%, #f59e0b 100%);
+        }
+
+        .bg-purple {
+            background: linear-gradient(135deg, #ae3ec9 0%, #862e9c 100%);
+        }
+
+        .label {
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .value {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 4px 0;
+        }
+
+        .sub-label {
+            color: #d0d0d0;
+            font-size: 10px;
+        }
+
+        /* Charts Section */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .card-box {
+            background: white;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 25px;
+            min-height: 300px;
+            position: relative;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        .header-icon {
+            width: 34px;
+            height: 34px;
+            background: #1a1d23;
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Achievements */
+        .achievements-bar {
+            background: var(--primary-green);
+            border-radius: 14px;
+            padding: 18px 25px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 25px;
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        .ach-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .badges-wrapper {
+            display: flex;
+            gap: 12px;
+            flex-grow: 1;
+        }
+
+        .badge-item {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px 18px;
+            min-width: 140px;
+        }
+
+        .badge-item strong {
+            display: block;
+            font-size: 13px;
+        }
+
+        .badge-item span {
+            display: block;
+            font-size: 10px;
+            opacity: 0.8;
+        }
+
+        /* Empty States */
+        .empty-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #dcdcdc;
+            width: 80%;
+        }
+
+        .empty-content p {
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        /* ط³ظٹظƒط´ظ† ط§ظ„ط¥ظ†ط¬ط§ط²ط§طھ - ط§ظ„ط­ط§ظ„ط© ط§ظ„ط¹ط§ظ…ط© (ط¨ط§ظ‡طھط©) */
+        .achievements-bar {
+            background: var(--primary-green);
+            border-radius: 14px;
+            padding: 18px 25px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            opacity: 0.5;
+            /* ط´ظپط§ظپظٹط© ط§ظ„ط³ظٹظƒط´ظ† ظƒظ„ظ‡ */
+            transition: all 0.6s ease;
+        }
+
+        /* ط­ط§ظ„ط© ط§ظ„ظ€ Badge ظˆظ‡ظˆ ظ„ط³ظ‡ ظ…ظ‚ظپظˆظ„ */
+        .badge-item {
+            background: rgba(255, 255, 255, 0.05);
+            /* ط´ظپط§ظپ ط¬ط¯ط§ظ‹ */
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 10px 18px;
+            min-width: 140px;
+            filter: grayscale(1);
+            /* ط£ط¨ظٹط¶ ظˆط£ط³ظˆط¯ */
+            transition: all 0.6s ease;
+        }
+
+        /* ط§ظ„ظƒظ„ط§ط³ ط§ظ„ظ„ظٹ ظ‡ظٹط´ظٹظ„ ط§ظ„ط¨ظ‡طھط§ظ† ظˆظٹظ†ظˆط± ط§ظ„ط¥ظ†ط¬ط§ط² */
+        .badge-item.active-badge {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            filter: grayscale(0);
+            /* ظٹط±ط¬ط¹ ظ„ط£ظ„ظˆط§ظ†ظ‡ */
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+            /* ظٹظƒط¨ط± ط­ط§ط¬ط© ط¨ط³ظٹط·ط© */
+        }
+
+        /* ظ„ظ…ط§ ط§ظ„ط³ظٹظƒط´ظ† ظٹط¨ط¯ط£ ظٹطھظپط¹ظ„ */
+        .achievements-bar.section-active {
+            opacity: 1;
+        }
+
+        .dashboard-container {
+            background: #fff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            direction: rtl;
+            /* ظ„ط¶ط¨ط· ط§ظ„ط§طھط¬ط§ظ‡ ط§ظ„ط¹ط±ط¨ظٹ ظƒظ…ط§ ظپظٹ ط§ظ„طµظˆط±ط© */
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .icon-black {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+        }
+
+        .titles h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .titles p {
+            margin: 0;
+            font-size: 13px;
+            color: #999;
+        }
+
+        /* ط²ط± ظ…ط³ط­ ط§ظ„ط¨ظٹط§ظ†ط§طھ ط¨ط§ظ„ظ„ظˆظ† ط§ظ„ط£ط­ظ…ط± ظˆط§ظ„ظ‡ظˆظپط± ط§ظ„ط®ظپظٹظپ */
+        .delete-btn {
+            background: transparent;
+            border: none;
+            color: #d63031;
+            font-size: 12px;
+            font-weight: bold;
+            display: none;
+            /* ظٹط¸ظ‡ط± ظپظ‚ط· ط¹ظ†ط¯ ظˆط¬ظˆط¯ ط¨ظٹط§ظ†ط§طھ */
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: rgba(214, 48, 49, 0.08);
+        }
+
+        /* ط´ط±ظٹط· ط§ظ„ظ…ظ†طھط¬ (ظ†ظپط³ ط§ظ„طµظˆط±ط©) */
+        .decision-row {
+            background-color: #f6fdf9;
+            /* ط§ظ„ظ„ظˆظ† ط§ظ„ط£ط®ط¶ط± ط§ظ„ظپط§طھط­ ظپظٹ ط§ظ„طµظˆط±ط© */
+            border: 1px solid #e9f5ed;
+            border-radius: 12px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .product-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-circle {
+            color: #2ecc71;
+            border: 1.5px solid #2ecc71;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+
+        .product-name {
+            font-weight: bold;
+            font-size: 15px;
+            color: #333;
+            margin-bottom: 3px;
+        }
+
+        .decision-date {
+            font-size: 12px;
+            color: #bbb;
+        }
+
+        .decision-status {
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* ط§ظ„ط­ط§ظ„ط© ط§ظ„ظپط§ط±ط؛ط© */
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: #eee;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes zoomIn {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .animate {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .animate-zoom {
+            animation: zoomIn 0.6s ease forwards;
+        }
+
+        @media (max-width: 900px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .achievements-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <!-- ط§ظ„ط´ط¹ط§ط± ظپظٹ ط£ظ‚طµظ‰ ط§ظ„ظٹط³ط§ط± -->
+        <div class="logo-section">
+            <p class="Think">Think <span class="dot">.</span></p>
+        </div>
+
+        <!-- ط§ظ„ط±ظˆط§ط¨ط· ظپظٹ ط£ظ‚طµظ‰ ط§ظ„ظٹظ…ظٹظ† -->
+        <ul class="nav-links">
+            <div class="nav-item active2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                    <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+                <li><a href="index.html" class="nav-link active">Home</a></li>
+            </div>
+
+            <div class="nav-item">
+                <svg class="nav-logo" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="7" height="7" x="3" y="3" rx="1" />
+                    <rect width="7" height="7" x="14" y="3" rx="1" />
+                    <rect width="7" height="7" x="14" y="14" rx="1" />
+                    <rect width="7" height="7" x="3" y="14" rx="1" />
+                </svg>
+                <li><a href="dash-board.html" class="nav-link">Dashboard</a>
+                </li>
+            </div>
+
+            <!-- ط£ط²ط±ط§ط± طھط³ط¬ظٹظ„ ط§ظ„ط¯ط®ظˆظ„ ظˆط§ظ„ط®ط±ظˆط¬ -->
+            <li class="auth-section" id="auth-container">
+                <!-- ظ‡ظ†ط§ ط§ظ„ظ€ JS ظ‡ظٹط­ط· ظٹط§ ط²ط±ط§ط± Log in ظٹط§ ط²ط±ط§ط± Log out -->
+            </li>
+
+        </ul>
+    </nav>
+    <div class="nav-placeholder"></div>
+
+    <div class="container">
+
+        <header class="header">
+            <h1>Your Dashboard</h1>
+            <p>Track your purchase decisions and real product prices.</p>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card" style="animation-delay: 0.1s;">
+                <div class="icon-sm bg-blue">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6zM3 6h18M16 10a4 4 0 01-8 0" />
+                    </svg>
+                </div>
+                <div class="label">إجمالي القرارات</div>
+                <div class="value">0</div>
+                <div class="sub-label">من سجل الاستخدام</div>
+            </div>
+            <div class="stat-card" style="animation-delay: 0.2s;">
+                <div class="icon-sm bg-green">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                        <path
+                            d="M12 2L4.5 9c0 0 3 1.5 7.5 1.5s7.5-1.5 7.5-1.5L12 2zM12 22s-8-4.5-8-11.5c0 0 3 1.5 8 1.5s8-1.5 8-1.5C20 17.5 12 22 12 22z" />
+                    </svg>
+                </div>
+                <div class="label">CO2 موفر</div>
+                <div class="value">0.0 كجم</div>
+                <div class="sub-label">تأثير بيئي إيجابي</div>
+            </div>
+            <div class="stat-card" style="animation-delay: 0.3s;">
+                <div class="icon-sm bg-yellow">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M16 8h-6a2 2 0 100 4h4a2 2 0 110 4H8M12 18V6" />
+                    </svg>
+                </div>
+                <div class="label">أموال موفرة</div>
+                <div class="value">0 EGP</div>
+                <div class="sub-label">محسوبة من سعر المنتج الحقيقي</div>
+            </div>
+            <div class="stat-card" style="animation-delay: 0.4s;">
+                <div class="icon-sm bg-purple">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="6" />
+                        <circle cx="12" cy="12" r="2" />
+                    </svg>
+                </div>
+                <div class="label">معدل المسؤولية</div>
+                <div class="value">0%</div>
+                <div class="sub-label">قرارات واعية</div>
+            </div>
+
+        </div>
+
+
+        <!-- Achievements -->
+        <div class="achievements-bar" style="animation-delay: 0.7s;">
+            <div class="ach-title">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <path
+                        d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2m-12 0v4h12v-4m-12 0h12" />
+                </svg>
+                Your Achievements
+            </div>
+            <div class="badges-wrapper">
+                <div class="badge-item"><strong>Beginner</strong><span>Completed your first decision</span></div>
+                <div class="badge-item"><strong>Mindful</strong><span>10 responsible decisions</span></div>
+                <div class="badge-item"><strong>Eco Saver</strong><span>Saved 50 kg CO2</span></div>
+            </div>
+        </div>
+
+        <div class="dashboard-container">
+            <!-- ط§ظ„ظ‡ظٹط¯ط± ط§ظ„ط«ط§ط¨طھ -->
+            <div class="dashboard-header">
+                <div class="header-right">
+                    <div class="icon-black">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                    </div>
+                    <div class="titles">
+                        <h3>Recent Decisions</h3>
+                        <p id="sub-title">Your latest activity</p>
+                    </div>
+                </div>
+
+                <div class="header-left">
+                    <button id="deleteBtn" class="delete-btn" onclick="clearAllData()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                            </path>
+                        </svg>
+                        Clear Data
+                    </button>
+
+                </div>
+            </div>
+
+            <!-- ظ…ظƒط§ظ† ط¸ظ‡ظˆط± ط§ظ„ظ…ط­طھظˆظ‰ (ظپط§ط±ط؛ ط£ظˆ ظ…ظ†طھط¬ط§طھ) -->
+            <div id="decisionsContainer"></div>
+        </div>
+<script src="api.js"></script>
+<script>
+      async function renderDashboard() {
+                const container = document.getElementById('decisionsContainer');
+                const deleteBtn = document.getElementById('deleteBtn');
+                const subTitle = document.getElementById('sub-title');
+
+                // ط¬ظ„ط¨ ط§ظ„ط¨ظٹط§ظ†ط§طھ ظ…ظ† ط§ظ„ظ€ localStorage (ط§ظ„ظ…ظƒط§ظ† ط§ظ„ظ„ظٹ ط­ظپط¸ظ†ط§ ظپظٹظ‡ ط§ظ„ظ…ظ†طھط¬ط§طھ)
+                if (!getAuthToken()) {
+                    window.location.href = "form.html";
+                    return;
+                }
+
+                let history = [];
+                try {
+                    const response = await apiRequest('/api/decisions');
+                    history = response.decisions || [];
+                } catch (error) {
+                    container.innerHTML = `<p style="text-align:center; color:#e74c3c;">${error.message}</p>`;
+                    return;
+                }
+
+                // --- ط§ظ„ط¬ط²ط، ط§ظ„ط£ظˆظ„: طھط­ط¯ظٹط« ط§ظ„ط¥ط­طµط§ط¦ظٹط§طھ (Stats) ---
+                const total = history.length;
+                const redDecisions = history.filter(item => item.status === 'red').length;
+                const moneySaved = history
+                    .filter(item => item.status === 'red' && item.priceInfo && item.priceInfo.available)
+                    .reduce((sum, item) => sum + Number(item.priceInfo.price || 0), 0)
+                    .toFixed(2);
+                const co2Saved = (redDecisions * 0.5).toFixed(1); // ظ…ط«ط§ظ„ طھط£ط«ظٹط± ط¨ظٹط¦ظٹ
+                const rate = total > 0 ? Math.round((history.filter(item => item.status === 'green').length / total) * 100) : 0;
+                const cards = document.querySelectorAll('.stat-card');
+              
+                // طھط­ط¯ظٹط« ط§ظ„ظ‚ظٹظ… ظپظٹ ط§ظ„ظ€ HTML
+                if (document.querySelector('.stat-card')) {
+                    document.querySelector('.stat-card:nth-child(1) .value').innerText = total;
+                    document.querySelector('.stat-card:nth-child(2) .value').innerText = co2Saved + " كجم";
+                    document.querySelector('.stat-card:nth-child(3) .value').innerText = moneySaved + " EGP";
+                    document.querySelector('.stat-card:nth-child(4) .value').innerText = rate + "%";
+                }
+
+                // --- ط§ظ„ط¬ط²ط، ط§ظ„ط«ط§ظ†ظٹ: ط¹ط±ط¶ ط§ظ„ظ…ظ†طھط¬ط§طھ ط£ظˆ ط§ظ„ط­ط§ظ„ط© ط§ظ„ظپط§ط±ط؛ط© ---
+                if (total === 0) {
+                    if (deleteBtn) deleteBtn.style.display = "none";
+                    if (subTitle) subTitle.innerText = "No activity yet";
+
+                    container.innerHTML = `
+            <div class="empty-state" style="text-align:center; padding:60px 0; opacity:0.3;">
+                <div style="font-size: 40px; margin-bottom:10px;">No data</div>
+                <p style="font-size: 16px; color: #333; margin:0;">No decisions yet</p>
+                <small style="color: #999;">Use the analyzer to start tracking your products.</small>
+            </div>`;
+                    return;
+                }
+
+                if (deleteBtn) deleteBtn.style.display = "flex";
+                if (subTitle) subTitle.innerText = "Your latest activity";
+
+                const formatPrice = (item) => {
+                    if (item.priceInfo && item.priceInfo.available) {
+                        return `Price: ${item.priceInfo.rawPrice || `${item.priceInfo.price} ${item.priceInfo.currency}`} - ${item.priceInfo.title} (${item.priceInfo.source})`;
+                    }
+
+                    if (item.priceInfo && item.priceInfo.source) {
+                        return `Price: not available (${item.priceInfo.source})`;
+                    }
+
+                    return 'Price: not available';
+                };
+
+                container.innerHTML = history.slice().reverse().map(item => `
+        <div class="decision-row" style="background-color: ${item.status === 'green' ? '#f6fdf9' : item.status === 'red' ? '#fff5f5' : '#fffaf0'};">
+            <div class="product-meta">
+                <div class="status-circle" style="color: ${item.status === 'green' ? '#2ecc71' : '#e74c3c'}; border-color: ${item.status === 'green' ? '#2ecc71' : '#e74c3c'};">
+                    ${item.status === 'green' ? '&#10003;' : '&#10005;'}
+                </div>
+                <div>
+                    <div class="product-name">${item.name}</div>
+                    <div class="decision-date">${formatPrice(item)}</div>
+                    <div class="decision-date">${item.date}</div>
+                </div>
+            </div>
+            <div class="decision-status">
+                ${item.status === 'green' ? 'Buy' : item.status === 'orange' ? 'Wait' : 'Skip'}
+            </div>
+        </div>
+    `).join('');
+
+                // طھط´ط؛ظٹظ„ ط§ظ„ط£ظ†ظٹظ…ظٹط´ظ†
+                document.querySelectorAll('.stat-card, .card-box').forEach(el => el.classList.add('animate'));
+                const achievements = document.querySelector('.achievements-bar');
+                if (achievements) achievements.classList.add('animate-zoom');
+            }
+            // ط¯ظ‡ ط¨ظٹط®ظ„ظٹ ط§ظ„ظƒظˆط¯ ظٹظ‚ط±ط£ ط§ظ„ظ€ LocalStorage ظˆظٹط±ط³ظ… ط§ظ„ظƒط±ظˆطھ ط£ظˆظ„ ظ…ط§ طھظپطھط­ ط§ظ„طµظپط­ط©
+            document.addEventListener('DOMContentLoaded', renderDashboard);
+
+            // ط¯ط§ظ„ط© ط§ظ„ظ…ط³ط­
+            async function clearAllData() {
+                if (confirm("Are you sure you want to clear all saved decisions?")) {
+                    await apiRequest('/api/decisions', { method: 'DELETE' });
+                    renderDashboard();
+                }
+            }
+
+         
+
+</script>
+</body>
+
+</html>

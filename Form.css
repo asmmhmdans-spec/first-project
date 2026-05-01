@@ -1,0 +1,118 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: "Cairo", sans-serif;
+  background: #f5f7f6;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  width: 320px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+h2 {
+  margin-bottom: 10px;
+  font-size: 30px;
+  color:#2bbbad ;
+}
+
+p {
+  color: #777;
+  margin-bottom: 20px;
+}
+
+.input-group {
+  text-align: right;
+  margin-bottom: 15px;
+}
+
+label {
+  font-size: 14px;
+  color: #0f0f0f;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 5px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  outline: none;
+  transition: 0.3s;
+  font-size: 14px;
+}
+
+/* ✨ تأثير الضغط */
+input:focus {
+  border-color: #2bbbad;
+  box-shadow: 0 0 0 3px rgba(43, 187, 173, 0.2);
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #2bbbad;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #239b8f;
+}
+
+.error {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+}
+.error-border{
+  border: 2px solid red;
+}
+.logo {
+  width: 60px;
+  height: 60px;
+  background: #2bbbad;
+  border-radius: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 15px;
+}
+
+.logo i {
+  color: white;
+  font-size: 28px;
+}
+
+
+/*  Animation */
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.container {
+  animation: slideUp 0.8s ease forwards;
+}
